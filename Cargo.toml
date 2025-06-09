@@ -1,0 +1,18 @@
+[package]
+name = "ot_tracker"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+anyhow = "1.0.98"
+capitalize = "0.3.4"
+clearscreen = "4.0.1"
+inquire = "0.7.5"
+sqlx = { version = "0.8.6", features = ["runtime-tokio", "sqlite", "time"] }
+time = { version = "0.3.41", features = [
+  "macros",
+  "local-offset",
+  "formatting",
+  "parsing",
+] }
+tokio = { version = "1.45.1", features = ["full"] }
