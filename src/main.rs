@@ -111,7 +111,6 @@ impl User {
     }
 }
 
-// TODO: Define the overtime struct model
 #[derive(Debug, FromRow)]
 struct Overtime {
     ot_id: Option<i64>,
@@ -130,10 +129,7 @@ impl Overtime {
     ) -> anyhow::Result<Overtime> {
         let user_id = User::get_user(pool, first_name, last_name).await?.user_id;
 
-        let now = OffsetDateTime::now_local()
-            .map_err(|e| anyhow::anyhow!("Failed to get local time: {}", e))?
-            .format(&Rfc3339)
-            .map_err(|e| anyhow::anyhow!("Failed to format time: {}", e))?;
+        let now = get_current_time()?;
 
         let ot = sqlx::query_as!(
             Overtime,
@@ -154,10 +150,7 @@ impl Overtime {
     }
 
     async fn end_tracking(&mut self, pool: &SqlitePool) -> anyhow::Result<()> {
-        let now = OffsetDateTime::now_local()
-            .map_err(|e| anyhow::anyhow!("Failed to get local time: {}", e))?
-            .format(&Rfc3339)
-            .map_err(|e| anyhow::anyhow!("Failed to format time: {}", e))?;
+        let now = get_current_time()?;
 
         sqlx::query!(
             r#"
@@ -175,8 +168,13 @@ impl Overtime {
     }
 }
 
-// TODO: Implement this function
-fn get_current_time() {}
+fn get_current_time() -> anyhow::Result<String> {
+    let now = OffsetDateTime::now_local()
+        .map_err(|e| anyhow::anyhow!("Failed to get local time: {}", e))?
+        .format(&Rfc3339)
+        .map_err(|e| anyhow::anyhow!("Failed to format time: {}", e))?;
+    Ok(now)
+}
 
 #[tokio::main(flavor = "current_thread")]
 async fn main() -> anyhow::Result<()> {
