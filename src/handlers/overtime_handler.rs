@@ -1,8 +1,8 @@
 use crate::OffsetDateTime;
 use crate::SqlitePool;
 use crate::User;
-use crate::get_current_time;
 pub use crate::models::overtime::Overtime;
+use crate::utils;
 
 impl Overtime {
     pub async fn start_tracking(
@@ -13,7 +13,7 @@ impl Overtime {
     ) -> anyhow::Result<Overtime> {
         let user_id = User::get_user(pool, first_name, last_name).await?.user_id;
 
-        let now = get_current_time()?;
+        let now = utils::get_current_time()?;
 
         let ot = sqlx::query_as!(
             Overtime,
@@ -34,7 +34,7 @@ impl Overtime {
     }
 
     pub async fn end_tracking(&mut self, pool: &SqlitePool) -> anyhow::Result<()> {
-        let now = get_current_time()?;
+        let now = utils::get_current_time()?;
 
         sqlx::query!(
             r#"

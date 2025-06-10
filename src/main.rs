@@ -8,17 +8,10 @@ use time::{OffsetDateTime, format_description::well_known::Rfc3339};
 
 mod handlers;
 mod models;
+mod utils;
 
 use handlers::overtime_handler::*;
 use handlers::user_handler::*;
-
-fn get_current_time() -> anyhow::Result<String> {
-    let now = OffsetDateTime::now_local()
-        .map_err(|e| anyhow::anyhow!("Failed to get local time: {}", e))?
-        .format(&Rfc3339)
-        .map_err(|e| anyhow::anyhow!("Failed to format time: {}", e))?;
-    Ok(now)
-}
 
 #[tokio::main(flavor = "current_thread")]
 async fn main() -> anyhow::Result<()> {
@@ -75,7 +68,7 @@ async fn main() -> anyhow::Result<()> {
                         panic!("Error getting first name from input")
                     }
 
-                    let _ = io::stdin().read(&mut [0u8]).unwrap();
+                    utils::pause();
                 }
                 "remove user" => {
                     let users: Vec<String> = User::list_users(&pool)
@@ -93,7 +86,7 @@ async fn main() -> anyhow::Result<()> {
                             .await?;
                         println!("User successfully removed")
                     }
-                    let _ = io::stdin().read(&mut [0u8]).unwrap();
+                    utils::pause();
                 }
                 "add overtime" => {
                     let users: Vec<String> = User::list_users(&pool)
@@ -135,7 +128,7 @@ async fn main() -> anyhow::Result<()> {
                         Err(_) => println!("Error with questionnaire, try again later"),
                         _ => (),
                     }
-                    let _ = io::stdin().read(&mut [0u8]).unwrap();
+                    utils::pause();
                 }
                 "check overtime" => println!("{choice} selected"),
                 "list users" => {
@@ -143,7 +136,8 @@ async fn main() -> anyhow::Result<()> {
                     users
                         .iter()
                         .for_each(|user| println!("{} {}", user.first_name, user.last_name));
-                    let _ = io::stdin().read(&mut [0u8]).unwrap();
+                    // let _ = io::stdin().read(&mut [0u8]).unwrap();
+                    utils::pause();
                 }
                 "quit" => break,
                 _ => (),
