@@ -1,4 +1,4 @@
-use sqlx::FromRow;
+use crate::FromRow;
 
 #[derive(Debug, FromRow)]
 pub struct User {
