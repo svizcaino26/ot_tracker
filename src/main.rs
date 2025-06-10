@@ -1,4 +1,4 @@
-use anyhow::Context;
+// use anyhow::Context;
 use capitalize::Capitalize;
 use inquire::{Confirm, Select, Text, error::InquireError};
 use sqlx::FromRow;
@@ -6,110 +6,10 @@ use sqlx::sqlite::SqlitePool;
 use std::io::{self, Read};
 use time::{OffsetDateTime, format_description::well_known::Rfc3339};
 
-#[derive(Debug, FromRow)]
-struct User {
-    user_id: i64,
-    first_name: String,
-    last_name: String,
-}
+mod handlers;
+mod models;
 
-impl User {
-    async fn create_user(
-        pool: &SqlitePool,
-        first_name: &str,
-        last_name: &str,
-    ) -> anyhow::Result<Self> {
-        if Self::exists(pool, first_name, last_name).await? {
-            return Err(anyhow::anyhow!("User already exists"));
-        }
-
-        let user = sqlx::query_as!(
-            User,
-            r#"
-        INSERT INTO users (first_name, last_name)
-        VALUES(?1, ?2)
-        RETURNING user_id, first_name, last_name
-        "#,
-            first_name,
-            last_name
-        )
-        .fetch_one(pool)
-        .await?;
-
-        Ok(user)
-    }
-
-    async fn get_user(
-        pool: &SqlitePool,
-        first_name: &str,
-        last_name: &str,
-    ) -> anyhow::Result<Self> {
-        let user = sqlx::query_as!(
-            User,
-            r#"
-        SELECT user_id, first_name, last_name 
-        FROM users
-        WHERE first_name = ?1 AND last_name = ?2
-        LIMIT 1 "#,
-            first_name,
-            last_name
-        )
-        .fetch_one(pool)
-        .await?;
-
-        Ok(user)
-    }
-
-    async fn exists(pool: &SqlitePool, first_name: &str, last_name: &str) -> anyhow::Result<bool> {
-        let exists = sqlx::query_scalar!(
-            r#"
-        SELECT EXISTS(
-        SELECT 1 FROM users
-        WHERE first_name = ?1 AND last_name = ?2
-        )
-        "#,
-            first_name,
-            last_name
-        )
-        .fetch_one(pool)
-        .await?
-            > 0;
-
-        Ok(exists)
-    }
-
-    async fn list_users(pool: &SqlitePool) -> anyhow::Result<Vec<User>> {
-        let users: Vec<User> = sqlx::query_as!(User, r#"SELECT * FROM users ORDER BY user_id"#)
-            .fetch_all(pool)
-            .await?;
-        Ok(users)
-    }
-
-    async fn delete_user(
-        pool: &SqlitePool,
-        first_name: &str,
-        last_name: &str,
-    ) -> anyhow::Result<()> {
-        let user = Self::get_user(pool, first_name, last_name).await?;
-        let query = sqlx::query_as!(
-            User,
-            r#"
-            DELETE FROM users
-            WHERE user_id = ?1
-            "#,
-            user.user_id
-        )
-        .execute(pool)
-        .await
-        .context("failed to delete user")?;
-
-        if query.rows_affected() == 0 {
-            anyhow::bail!("No user found with name {} {}", first_name, last_name);
-        }
-
-        Ok(())
-    }
-}
+use handlers::user_handler::*;
 
 #[derive(Debug, FromRow)]
 struct Overtime {
