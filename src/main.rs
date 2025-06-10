@@ -1,9 +1,7 @@
-// use anyhow::Context;
 use capitalize::Capitalize;
 use inquire::{Confirm, Select, Text, error::InquireError};
 use sqlx::FromRow;
 use sqlx::sqlite::SqlitePool;
-use std::io::{self, Read};
 use time::{OffsetDateTime, format_description::well_known::Rfc3339};
 
 mod handlers;
@@ -54,10 +52,11 @@ async fn main() -> anyhow::Result<()> {
                             {
                                 Ok(user) => {
                                     println!("User {} {} added", user.first_name, user.last_name);
+                                    utils::pause();
                                 }
                                 Err(e) => {
                                     println!("{e}");
-                                    let _ = io::stdin().read(&mut [0u8]).unwrap();
+                                    utils::pause();
                                     continue;
                                 }
                             }
