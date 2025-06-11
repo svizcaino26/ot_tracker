@@ -129,7 +129,12 @@ async fn main() -> anyhow::Result<()> {
                     }
                     utils::pause();
                 }
-                "check overtime" => println!("{choice} selected"),
+                "check overtime" => {
+                    let total_overtime = Overtime::calculate_total_overtime(&pool).await?;
+                    let total_overtime = utils::format_duration(total_overtime);
+                    println!("Total accmumulated overtime: {total_overtime}");
+                    utils::pause();
+                }
                 "list users" => {
                     let users = User::list_users(&pool).await?;
                     users

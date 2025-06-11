@@ -3,6 +3,8 @@ use crate::SqlitePool;
 use crate::User;
 pub use crate::models::overtime::Overtime;
 use crate::utils;
+use time::Duration;
+use time::format_description::well_known::Rfc3339;
 
 impl Overtime {
     pub async fn start_tracking(
@@ -50,4 +52,38 @@ impl Overtime {
 
         Ok(())
     }
+
+    pub async fn calculate_total_overtime(pool: &SqlitePool) -> anyhow::Result<Duration> {
+        let records = sqlx::query!(
+            r#"
+        SELECT start_time, end_time FROM overtime
+        "#,
+        )
+        .fetch_all(pool)
+        .await?;
+
+        let total_overtime = records
+            .iter()
+            .filter_map(|record| {
+                let end_dt = OffsetDateTime::parse(record.end_time.as_ref()?, &Rfc3339).ok()?;
+                let start_dt = OffsetDateTime::parse(record.start_time.as_ref()?, &Rfc3339).ok()?;
+                Some(end_dt - start_dt)
+            })
+            .fold(Duration::ZERO, |acc, dur| acc + dur);
+
+        Ok(total_overtime)
+    }
 }
+
+// fn get_overtime_total<T>(records: Vec<T>) -> anyhow::Result<Duration> {
+//     let total_overtime = records
+//         .iter()
+//         .filter_map(|record| {
+//             let end_dt = OffsetDateTime::parse(record.end_time.as_ref()?, &Rfc3339).ok()?;
+//             let start_dt = OffsetDateTime::parse(record.start_time.as_ref()?, &Rfc3339).ok()?;
+//             Some(end_dt - start_dt)
+//         })
+//         .fold(Duration::ZERO, |acc, dur| acc + dur);
+//
+//     Ok(total_overtime)
+// }
