@@ -30,6 +30,7 @@ async fn main() -> anyhow::Result<()> {
             "remove user",
             "add overtime",
             "check overtime",
+            "date",
             "quit",
         ];
 
@@ -144,10 +145,32 @@ async fn main() -> anyhow::Result<()> {
                     utils::pause();
                 }
                 "quit" => break,
+                "date" => {
+                    date_select_menu();
+                    utils::pause();
+                }
                 _ => (),
             },
             Err(_) => println!("There was an error, please try again"),
         }
     }
     Ok(())
+}
+
+fn date_select_menu() {
+    // use chrono::{NaiveDate, Weekday};
+    use inquire::DateSelect;
+
+    let date = DateSelect::new("When do you want to travel?")
+        // .with_starting_date(NaiveDate::from_ymd(2021, 8, 1))
+        // .with_min_date(NaiveDate::from_ymd(2021, 8, 1))
+        // .with_max_date(NaiveDate::from_ymd(2021, 12, 31))
+        // .with_week_start(Weekday::Mon)
+        .with_help_message("Possible flights will be displayed according to the selected date")
+        .prompt();
+
+    match date {
+        Ok(date) => println!("{}", date),
+        Err(_) => println!("There was an error in the system."),
+    }
 }
