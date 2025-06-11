@@ -9,3 +9,9 @@ pub struct Overtime {
     pub end_time: Option<OffsetDateTime>,
     pub description: Option<String>,
 }
+
+#[derive(Debug, FromRow)]
+pub struct OvertimeRecord {
+    pub start_time: Option<String>,
+    pub end_time: Option<String>,
+}

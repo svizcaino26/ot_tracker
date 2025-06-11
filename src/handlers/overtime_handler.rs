@@ -1,7 +1,7 @@
 use crate::OffsetDateTime;
 use crate::SqlitePool;
 use crate::User;
-pub use crate::models::overtime::Overtime;
+pub use crate::models::overtime::{Overtime, OvertimeRecord};
 use crate::utils;
 use time::Duration;
 use time::format_description::well_known::Rfc3339;
@@ -54,7 +54,8 @@ impl Overtime {
     }
 
     pub async fn calculate_total_overtime(pool: &SqlitePool) -> anyhow::Result<Duration> {
-        let records = sqlx::query!(
+        let records = sqlx::query_as!(
+            OvertimeRecord,
             r#"
         SELECT start_time, end_time FROM overtime
         "#,
@@ -62,28 +63,29 @@ impl Overtime {
         .fetch_all(pool)
         .await?;
 
-        let total_overtime = records
-            .iter()
-            .filter_map(|record| {
-                let end_dt = OffsetDateTime::parse(record.end_time.as_ref()?, &Rfc3339).ok()?;
-                let start_dt = OffsetDateTime::parse(record.start_time.as_ref()?, &Rfc3339).ok()?;
-                Some(end_dt - start_dt)
-            })
-            .fold(Duration::ZERO, |acc, dur| acc + dur);
+        let total_overtime = get_overtime_total(&records)?;
 
         Ok(total_overtime)
     }
+
+    pub async fn calculate_overtime_by_user(
+        pool: &SqlitePool,
+        end_date: Option<OffsetDateTime>,
+        start_date: OffsetDateTime,
+    ) -> anyhow::Result<()> {
+        Ok(())
+    }
 }
 
-// fn get_overtime_total<T>(records: Vec<T>) -> anyhow::Result<Duration> {
-//     let total_overtime = records
-//         .iter()
-//         .filter_map(|record| {
-//             let end_dt = OffsetDateTime::parse(record.end_time.as_ref()?, &Rfc3339).ok()?;
-//             let start_dt = OffsetDateTime::parse(record.start_time.as_ref()?, &Rfc3339).ok()?;
-//             Some(end_dt - start_dt)
-//         })
-//         .fold(Duration::ZERO, |acc, dur| acc + dur);
-//
-//     Ok(total_overtime)
-// }
+fn get_overtime_total(records: &[OvertimeRecord]) -> anyhow::Result<Duration> {
+    let total_overtime = records
+        .iter()
+        .filter_map(|record| {
+            let end_dt = OffsetDateTime::parse(record.end_time.as_ref()?, &Rfc3339).ok()?;
+            let start_dt = OffsetDateTime::parse(record.start_time.as_ref()?, &Rfc3339).ok()?;
+            Some(end_dt - start_dt)
+        })
+        .fold(Duration::ZERO, |acc, dur| acc + dur);
+
+    Ok(total_overtime)
+}
