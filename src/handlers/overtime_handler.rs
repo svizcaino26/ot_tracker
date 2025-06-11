@@ -70,10 +70,24 @@ impl Overtime {
 
     pub async fn calculate_overtime_by_user(
         pool: &SqlitePool,
-        end_date: Option<OffsetDateTime>,
-        start_date: OffsetDateTime,
-    ) -> anyhow::Result<()> {
-        Ok(())
+        first_name: &str,
+        last_name: &str,
+    ) -> anyhow::Result<Duration> {
+        let user_id = User::get_user(pool, first_name, last_name).await?.user_id;
+
+        let records = sqlx::query_as!(
+            OvertimeRecord,
+            r#"
+            SELECT start_time, end_time FROM overtime
+            WHERE user_id = ?1"#,
+            user_id
+        )
+        .fetch_all(pool)
+        .await?;
+
+        let total_overtime = get_overtime_total(&records)?;
+
+        Ok(total_overtime)
     }
 }
 

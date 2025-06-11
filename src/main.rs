@@ -29,7 +29,8 @@ async fn main() -> anyhow::Result<()> {
             "list users",
             "remove user",
             "add overtime",
-            "check overtime",
+            "get total overtime",
+            "get overtime by user",
             "date",
             "quit",
         ];
@@ -130,10 +131,37 @@ async fn main() -> anyhow::Result<()> {
                     }
                     utils::pause();
                 }
-                "check overtime" => {
+                "get total overtime" => {
                     let total_overtime = Overtime::calculate_total_overtime(&pool).await?;
                     let total_overtime = utils::format_duration(total_overtime);
                     println!("Total accmumulated overtime: {total_overtime}");
+                    utils::pause();
+                }
+                "get overtime by user" => {
+                    let users: Vec<String> = User::list_users(&pool)
+                        .await?
+                        .iter()
+                        .map(|user| format!("{} {}", user.first_name, user.last_name))
+                        .collect();
+
+                    let user = Select::new("Select user", users).prompt();
+
+                    if let Ok(user_split) = &user {
+                        let mut user_split = user_split.split_whitespace();
+                        let total_overtime = Overtime::calculate_overtime_by_user(
+                            &pool,
+                            user_split.next().unwrap(),
+                            user_split.next().unwrap(),
+                        )
+                        .await?;
+                        let total_overtime = utils::format_duration(total_overtime);
+                        println!(
+                            "Total accmumulated overtime for {}: {}",
+                            user.unwrap(),
+                            total_overtime
+                        );
+                    }
+
                     utils::pause();
                 }
                 "list users" => {
@@ -141,7 +169,6 @@ async fn main() -> anyhow::Result<()> {
                     users
                         .iter()
                         .for_each(|user| println!("{} {}", user.first_name, user.last_name));
-                    // let _ = io::stdin().read(&mut [0u8]).unwrap();
                     utils::pause();
                 }
                 "quit" => break,
