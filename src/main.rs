@@ -12,6 +12,7 @@ mod utils;
 
 use handlers::overtime_handler::*;
 use handlers::user_handler::*;
+use prompts::overtime_prompts;
 use prompts::user_prompts;
 use ui::input;
 use ui::menu::MenuOption;
@@ -42,7 +43,13 @@ async fn main() -> anyhow::Result<()> {
                 User::display_user_list(&pool).await?;
                 utils::pause();
             }
-            MenuOption::AddOvertime => println!("add overtime selected"),
+            MenuOption::AddOvertime => {
+                match overtime_prompts::prompt_add_overtime(&pool).await {
+                    Ok(()) => println!("Overtime successfully recorded"),
+                    Err(e) => eprintln!("Error: {}", e),
+                }
+                utils::pause();
+            }
             MenuOption::GetOvertime => println!("get overtime selected"),
             MenuOption::Quit => break,
         }
@@ -51,48 +58,6 @@ async fn main() -> anyhow::Result<()> {
         //     Select::new("What do you want to do?", options).prompt();
         // match ans {
         //     Ok(choice) => match choice {
-        //         "add overtime" => {
-        //             let users: Vec<String> = User::list_users(&pool)
-        //                 .await?
-        //                 .iter()
-        //                 .map(|user| format!("{} {}", user.first_name, user.last_name))
-        //                 .collect();
-        //
-        //             let user_to_track =
-        //                 Select::new("Select user to start tracking", users).prompt();
-        //
-        //             // TODO: Add the prompt for description
-        //             let mut ot: Option<Overtime> = None;
-        //             if let Ok(user) = user_to_track {
-        //                 let mut user = user.split_whitespace();
-        //                 ot = Some(
-        //                     Overtime::start_tracking(
-        //                         &pool,
-        //                         user.next().unwrap(),
-        //                         user.next().unwrap(),
-        //                         "",
-        //                     )
-        //                     .await?,
-        //                 );
-        //             }
-        //
-        //             let ans = Confirm::new("Overtime tracking started")
-        //                 .with_default(true)
-        //                 .with_help_message("Press ENTER to end tracking")
-        //                 .prompt();
-        //
-        //             match ans {
-        //                 Ok(true) => {
-        //                     if let Some(mut ot) = ot {
-        //                         ot.end_tracking(&pool).await?;
-        //                         println!("Tracking stopped, overtime recorded successfully");
-        //                     }
-        //                 }
-        //                 Err(_) => println!("Error with questionnaire, try again later"),
-        //                 _ => (),
-        //             }
-        //             utils::pause();
-        //         }
         //         "get total overtime" => {
         //             let total_overtime = Overtime::calculate_total_overtime(&pool).await?;
         //             let total_overtime = utils::format_duration(total_overtime);
@@ -126,12 +91,6 @@ async fn main() -> anyhow::Result<()> {
         //
         //             utils::pause();
         //         }
-        //         "quit" => break,
-        //         "date" => {
-        //             date_select_menu();
-        //             utils::pause();
-        //         }
-        //         _ => (),
         //     },
         //     Err(_) => println!("There was an error, please try again"),
         // }
@@ -140,14 +99,9 @@ async fn main() -> anyhow::Result<()> {
 }
 
 fn date_select_menu() {
-    // use chrono::{NaiveDate, Weekday};
     use inquire::DateSelect;
 
     let date = DateSelect::new("When do you want to travel?")
-        // .with_starting_date(NaiveDate::from_ymd(2021, 8, 1))
-        // .with_min_date(NaiveDate::from_ymd(2021, 8, 1))
-        // .with_max_date(NaiveDate::from_ymd(2021, 12, 31))
-        // .with_week_start(Weekday::Mon)
         .with_help_message("Possible flights will be displayed according to the selected date")
         .prompt();
 
