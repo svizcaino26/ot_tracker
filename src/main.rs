@@ -6,11 +6,14 @@ use time::{OffsetDateTime, format_description::well_known::Rfc3339};
 
 mod handlers;
 mod models;
+mod prompts;
 mod ui;
 mod utils;
 
 use handlers::overtime_handler::*;
 use handlers::user_handler::*;
+use prompts::user_prompts;
+use ui::input;
 use ui::menu::MenuOption;
 
 #[tokio::main(flavor = "current_thread")]
@@ -20,60 +23,24 @@ async fn main() -> anyhow::Result<()> {
     loop {
         clearscreen::clear().expect("failed to clear screeen");
         match MenuOption::prompt()? {
-            MenuOption::AddUser => println!("add user selected"),
+            MenuOption::AddUser => {
+                match user_prompts::prompt_add_user(&pool).await {
+                    Ok(_user) => println!("User added successfully"),
+                    Err(e) => eprintln!("Error: {}", e),
+                }
+                utils::pause();
+            }
             MenuOption::RemoveUser => println!("remove user selected"),
             MenuOption::ListUsers => println!("list users selected"),
             MenuOption::AddOvertime => println!("add overtime selected"),
             MenuOption::GetOvertime => println!("get overtime selected"),
             MenuOption::Quit => break,
         }
-        // let options: Vec<&str> = vec![
-        //     "add user",
-        //     "list users",
-        //     "remove user",
-        //     "add overtime",
-        //     "get total overtime",
-        //     "get overtime by user",
-        //     "date",
-        //     "quit",
-        // ];
-        //
+
         // let ans: Result<&str, InquireError> =
         //     Select::new("What do you want to do?", options).prompt();
         // match ans {
         //     Ok(choice) => match choice {
-        //         "add user" => {
-        //             let first_name = Text::new("First name:").prompt();
-        //
-        //             if let Ok(first_name) = first_name {
-        //                 let last_name = Text::new("Last name:").prompt();
-        //                 if let Ok(last_name) = last_name {
-        //                     match User::create_user(
-        //                         &pool,
-        //                         &first_name.capitalize(),
-        //                         &last_name.capitalize(),
-        //                     )
-        //                     .await
-        //                     {
-        //                         Ok(user) => {
-        //                             println!("User {} {} added", user.first_name, user.last_name);
-        //                             utils::pause();
-        //                         }
-        //                         Err(e) => {
-        //                             println!("{e}");
-        //                             utils::pause();
-        //                             continue;
-        //                         }
-        //                     }
-        //                 } else {
-        //                     panic!("Error getting last name from input")
-        //                 }
-        //             } else {
-        //                 panic!("Error getting first name from input")
-        //             }
-        //
-        //             utils::pause();
-        //         }
         //         "remove user" => {
         //             let users: Vec<String> = User::list_users(&pool)
         //                 .await?
