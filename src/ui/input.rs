@@ -20,7 +20,7 @@ pub fn confirm(prompt: &str) -> anyhow::Result<bool> {
 }
 
 pub fn name_input(which: &str) -> anyhow::Result<String> {
-    Ok(Text::new(&format!("{} name", which))
+    Ok(Text::new(&format!("{} name:", which))
         // TODO: add error handling for empty strings here
         // .with_validator(|input: &str| {
         //     if input.trim().is_empty() {

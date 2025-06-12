@@ -38,7 +38,10 @@ async fn main() -> anyhow::Result<()> {
                 }
                 utils::pause();
             }
-            MenuOption::ListUsers => println!("list users selected"),
+            MenuOption::ListUsers => {
+                User::display_user_list(&pool).await?;
+                utils::pause();
+            }
             MenuOption::AddOvertime => println!("add overtime selected"),
             MenuOption::GetOvertime => println!("get overtime selected"),
             MenuOption::Quit => break,
@@ -48,24 +51,6 @@ async fn main() -> anyhow::Result<()> {
         //     Select::new("What do you want to do?", options).prompt();
         // match ans {
         //     Ok(choice) => match choice {
-        //         "remove user" => {
-        //             let users: Vec<String> = User::list_users(&pool)
-        //                 .await?
-        //                 .iter()
-        //                 .map(|user| format!("{} {}", user.first_name, user.last_name))
-        //                 .collect();
-        //
-        //             let user_to_be_removed =
-        //                 Select::new("Select the user to be removed", users).prompt();
-        //
-        //             if let Ok(user) = user_to_be_removed {
-        //                 let mut user = user.split_whitespace();
-        //                 User::delete_user(&pool, user.next().unwrap(), user.next().unwrap())
-        //                     .await?;
-        //                 println!("User successfully removed")
-        //             }
-        //             utils::pause();
-        //         }
         //         "add overtime" => {
         //             let users: Vec<String> = User::list_users(&pool)
         //                 .await?
@@ -139,13 +124,6 @@ async fn main() -> anyhow::Result<()> {
         //                 );
         //             }
         //
-        //             utils::pause();
-        //         }
-        //         "list users" => {
-        //             let users = User::list_users(&pool).await?;
-        //             users
-        //                 .iter()
-        //                 .for_each(|user| println!("{} {}", user.first_name, user.last_name));
         //             utils::pause();
         //         }
         //         "quit" => break,

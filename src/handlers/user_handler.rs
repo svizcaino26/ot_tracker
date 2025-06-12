@@ -102,4 +102,12 @@ impl User {
 
         Ok(())
     }
+
+    pub async fn display_user_list(pool: &SqlitePool) -> anyhow::Result<()> {
+        let users = User::list_users(pool).await?;
+        users
+            .iter()
+            .for_each(|user| println!("{} {}", user.first_name, user.last_name));
+        Ok(())
+    }
 }
