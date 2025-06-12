@@ -36,12 +36,14 @@ pub fn name_input(which: &str) -> anyhow::Result<String> {
         .capitalize())
 }
 
-pub async fn user_select(pool: &SqlitePool) -> anyhow::Result<String> {
+pub async fn user_select(pool: &SqlitePool) -> anyhow::Result<Option<String>> {
     let users: Vec<String> = User::list_users(pool)
         .await?
         .iter()
         .map(|user| format!("{} {}", user.first_name, user.last_name))
         .collect();
 
-    Ok(Select::new("Select user", users).prompt()?)
+    Ok(Select::new("Select user", users)
+        .with_help_message("Press ESC to skip")
+        .prompt_skippable()?)
 }
