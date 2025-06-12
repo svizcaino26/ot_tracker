@@ -5,9 +5,9 @@ use crate::User;
 use capitalize::Capitalize;
 use inquire::{Confirm, Select, Text};
 
-pub fn text_input(prompt: &str) -> anyhow::Result<String> {
+pub fn description_input(prompt: &str) -> anyhow::Result<String> {
     Ok(Text::new(prompt)
-        .with_help_message("Enter text and press ENTER")
+        .with_help_message("Enter a description to start recording")
         .prompt()?)
 }
 
@@ -43,5 +43,5 @@ pub async fn user_select(pool: &SqlitePool) -> anyhow::Result<String> {
         .map(|user| format!("{} {}", user.first_name, user.last_name))
         .collect();
 
-    Ok(Select::new("Select the user to be removed", users).prompt()?)
+    Ok(Select::new("Select user", users).prompt()?)
 }
