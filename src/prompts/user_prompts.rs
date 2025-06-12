@@ -9,3 +9,11 @@ pub async fn prompt_add_user(pool: &SqlitePool) -> anyhow::Result<User> {
 
     Ok(user)
 }
+
+pub async fn prompt_remove_user(pool: &SqlitePool) -> anyhow::Result<()> {
+    let user = input::user_select(pool).await?;
+    let mut user = user.split_whitespace();
+    User::delete_user(pool, user.next().unwrap(), user.next().unwrap()).await?;
+
+    Ok(())
+}

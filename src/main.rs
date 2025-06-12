@@ -30,7 +30,14 @@ async fn main() -> anyhow::Result<()> {
                 }
                 utils::pause();
             }
-            MenuOption::RemoveUser => println!("remove user selected"),
+
+            MenuOption::RemoveUser => {
+                match user_prompts::prompt_remove_user(&pool).await {
+                    Ok(()) => println!("User removed successfully"),
+                    Err(e) => eprintln!("Error: {}", e),
+                }
+                utils::pause();
+            }
             MenuOption::ListUsers => println!("list users selected"),
             MenuOption::AddOvertime => println!("add overtime selected"),
             MenuOption::GetOvertime => println!("get overtime selected"),

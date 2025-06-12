@@ -1,5 +1,7 @@
 // INFO: Handles base input types tu build specific prompts
 
+use crate::SqlitePool;
+use crate::User;
 use capitalize::Capitalize;
 use inquire::{Confirm, Select, Text};
 
@@ -32,4 +34,14 @@ pub fn name_input(which: &str) -> anyhow::Result<String> {
         .trim()
         .to_string()
         .capitalize())
+}
+
+pub async fn user_select(pool: &SqlitePool) -> anyhow::Result<String> {
+    let users: Vec<String> = User::list_users(pool)
+        .await?
+        .iter()
+        .map(|user| format!("{} {}", user.first_name, user.last_name))
+        .collect();
+
+    Ok(Select::new("Select the user to be removed", users).prompt()?)
 }
